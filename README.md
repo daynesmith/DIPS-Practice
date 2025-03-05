@@ -1,6 +1,6 @@
 # Digital Image Processing 
 Assignment #2 (Shape Counting)
-Due: Thu 03/21/24 11:59 PM
+Due: Thu 03/26/25 11:59 PM
 
 __________________________________________________________________________________________________________________
 Objective 1: The input image contains objects of four geometric shapes: circle, square, rectangle, and ellipse. The shapes have a brighter intensity compared to the background. The objective of the assignment is to count the total number of each geometric shape in the image by performing binary image processing. The overall steps are 
