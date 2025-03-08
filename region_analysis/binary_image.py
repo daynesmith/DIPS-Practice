@@ -8,6 +8,7 @@ class BinaryImage:
         image: a greyscale image
         returns a histogram as a list """
 
+        
         hist = [0]*256
 
         return hist
