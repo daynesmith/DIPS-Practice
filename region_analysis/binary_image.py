@@ -1,3 +1,6 @@
+import dip
+from dip import *
+
 class BinaryImage:
     def __init__(self):
         pass
@@ -7,9 +10,21 @@ class BinaryImage:
         takes as input:
         image: a greyscale image
         returns a histogram as a list """
-
+        
         
         hist = [0]*256
+        """
+        image = [
+            [z,x,c,v,b],
+            [s,d,f,g,h],
+            [w,e,r,t,y],
+        ]
+        """
+
+        #iterate through each pixel in each row and add add to respective greyscale value
+        for row in image:
+            for pixel in row:
+                hist[pixel] += 1
 
         return hist
 
@@ -24,9 +39,38 @@ class BinaryImage:
         on teams). Do not implement the Otsu's thresholding method. No points are awarded for Otsu's method.
         """
 
-        threshold = 0
+        #starting threshold will be between min and max pixel values
+        oldthreshold =  256 // 2
+        while True:
+            lower_sum = 0
+            upper_sum = 0
+            lower_count = 0
+            upper_count = 0
 
-        return threshold
+
+            for i in range(0,oldthreshold):
+                lower_sum += i* hist[i] #weighted sum lower pixels
+                lower_count += hist[i]  #number of pixels in lower threshold
+                
+
+            for i in range(oldthreshold,256):
+                upper_sum += i * hist[i] #weighted sum upper pixels
+                upper_count += hist[i]   #number of pixels in upper
+
+
+            lower_mean = lower_sum // lower_count #calc means for new threshold
+            upper_mean = upper_sum // upper_count
+            
+            
+            newthreshold = (upper_mean + lower_mean) // 2
+            print(newthreshold-oldthreshold)
+            if abs(newthreshold - oldthreshold) == 0:
+                break
+            else:
+                oldthreshold = newthreshold
+
+
+        return newthreshold
 
     def binarize(self, image, threshold):
         """ Comptues the binary image of the input image based on histogram analysis and thresholding
