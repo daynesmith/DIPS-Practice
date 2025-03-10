@@ -62,9 +62,9 @@ class BinaryImage:
             upper_mean = upper_sum // upper_count
             
             
-            newthreshold = (upper_mean + lower_mean) // 2
-            print(newthreshold-oldthreshold)
-            if abs(newthreshold - oldthreshold) == 0:
+            newthreshold = (upper_mean + lower_mean) // 2  #calc new threshold
+
+            if abs(newthreshold - oldthreshold) == 0: #check if threshold is equal to previous if so break and return threshold if not then set old threshold to new and repeat
                 break
             else:
                 oldthreshold = newthreshold
@@ -80,6 +80,14 @@ class BinaryImage:
         returns: a binary image """
 
         bin_img = image.copy()
+        
+
+        for i in range(len(bin_img)): #iterate through rows
+            for j in range(len(bin_img[i])): #iterate through columns
+                if bin_img[i][j] < threshold: #if less than threshold 0 if greater 255
+                    bin_img[i][j] = 0
+                else:
+                    bin_img[i][j] = 255
 
         return bin_img
 
