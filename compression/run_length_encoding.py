@@ -1,3 +1,4 @@
+import dip
 from dip import *
 
 class Rle:
@@ -11,6 +12,13 @@ class Rle:
         image: binary_image
         returns run length code
         """
+        img = binary_image.copy()
+        rle_code = []
+        #rle code will be stored in 2d array each row will contain runlength encoding for each row in the image.
+        for row in img:
+            for col in row:
+
+
 
         return zeros(100)  # replace zeros with rle_code
 
