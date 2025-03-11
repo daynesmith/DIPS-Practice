@@ -1,6 +1,6 @@
 import dip
 from dip import *
-
+import math
 class ShapeCounting:
     def __init__(self):
         pass
@@ -63,19 +63,19 @@ class ShapeCounting:
                 else:
                     blob_img[i][j] = 0
                     regions.setdefault(0,[]).append((i,j))
-        """      
-        #get rid of keys with less than 10 pixels
+            
+        #get rid of keys with less than 10 pixels so we dont have to worry about it in next section
         keys_list = list(regions.keys())
-        print(len(regions.keys()))
         for key in keys_list:
             if len(regions[key]) < 10:
                 del regions[key]
-        print(len(regions.keys()))
-        #should print 101 regions after reduction 0 is background and the rest are the 100 foreground elements """
+        
+        #101 regions after eliminating regions < 10 pixels in size, key 0 is background and the rest are the 100 foreground elements
 
+        del regions[0] #delete 0 because we dont need to get the information for the background
         return regions
 
-    def identify_shapes(self, region):
+    def identify_shapes(self, regions):
         """Compute shape features area and centroid, and shape
         Ignore shapes smaller than 10 pixels in area.
         takes as input
@@ -88,8 +88,63 @@ class ShapeCounting:
         # Region: <region_no>, centroid: <centroid>, area: <shape area>, shape: <shape type>
         # Example: Region: 871, centroid: (969.11, 51.11), area: 707, shape: c
 
+        #shapes = {"key : [centroid, area, region_shape]"}
         shapes = dict()
+        region_keys = regions.keys()
 
+        for key in region_keys:
+            #get i and j of each pixel in region weighted sum for centroid.
+            i_sum = 0
+            j_sum = 0
+            for i, j in regions[key]:
+                i_sum += i
+                j_sum += j
+            centroid = (i_sum / len(regions[key]), j_sum / len(regions[key]))
+            #area is just all pixels in the region
+            area = len(regions[key])
+            
+            #check for shapes
+            #we will check for shapes by calculating max and min i and j within each region.
+            max_i = None
+            min_i = None
+            max_j = None
+            min_j = None
+
+            for i, j in regions[key]:
+                if min_i is None or i < min_i:
+                    min_i = i
+                if max_i is None or i > max_i:
+                    max_i = i
+                if min_j is None or j < min_j:
+                    min_j = j
+                if max_j is None or j > max_j:
+                    max_j = j
+
+            #check heigh and width if they are same or similar you should check for square then circle
+            i_length = max_i - min_i
+            j_length = max_j - min_j
+            region_shape = None
+            if abs((max_i - min_i) - (max_j - min_j)) < 2:
+                #for a circle that has the same width and height as a square the circles area will be 78.5%.
+                #to check for square or circle i will calculate area and say anything > 89.25% is a square
+                if area > (i_length * j_length * .8925):
+                    region_shape = "s"
+                else:
+                    region_shape = "c"
+            else:
+                #same check for rectangle or ellipse, ellipse is 78.5% of the area within rectangle based on i length and j length
+                if area > (i_length * j_length * .8925):
+                    region_shape = "r"
+                else:
+                    region_shape = "e"
+
+
+
+            shapes[key] = [centroid, area, region_shape]
+
+        
+
+        print(*shapes.values(), sep = '\n')
         return shapes
 
     def count_shapes(self, shapes_data):
@@ -99,7 +154,24 @@ class ShapeCounting:
            returns: a dictionary with count of each shape
            Example return value: {'circles': 21, 'ellipses': 25, 'rectangles': 31, 'squares': 23}
            """
-        return {"circles": 0, "ellipses": 0, "rectangles": 0, "squares": 0}
+        shapes = shapes_data.keys()
+        circles = 0
+        ellipses = 0
+        squares = 0
+        rectangles = 0
+
+        for key in shapes:
+            for s in shapes_data[key]:
+                if s == "c":
+                    circles +=1
+                elif s == "s":
+                    squares += 1
+                elif s == "r":
+                    rectangles += 1
+                elif s == "e":
+                    ellipses += 1
+
+        return {"circles": circles, "ellipses": ellipses, "rectangles": rectangles, "squares": squares}
 
     def mark_image_regions(self, image, shapes_data):
         """Creates a new image with computed stats for each shape
@@ -108,6 +180,21 @@ class ShapeCounting:
         image: binary image
         shapes_data: a list/dict of regions, with centroid, shape, and area for each shape
         returns: image marked with center and shape_type"""
+        final_image = image.copy()
+        
+        for key, shape_info in shapes_data.items():
+            pixel = tuple(math.floor(x) for x in reversed(shape_info[0]))
+            text = shape_info[2]
+            putText(
+                final_image,
+                text,
+                pixel,
+                1,
+                2,
+                (0,0,0),
+                1
+            )
 
-        return image
+
+        return final_image
 
